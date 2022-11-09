@@ -17,8 +17,12 @@ module.exports.getUserById = (req, res) => {
         res.status(404).send({ message: 'Пользователь по указанному id не найден' });
       }
     })
-    .catch(() => {
-      res.status(500).send({ message: 'Произошла неизвестная ошибка' });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Произошла ошибка. Возможно, введён некорректный id пользователя' });
+      } else {
+        res.status(500).send({ message: 'Произошла неизвестная ошибка' });
+      }
     });
 };
 
@@ -36,12 +40,9 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.editUser = (req, res) => {
-  const updatedData = {
-    name: req.body.name,
-    about: req.body.about,
-  };
+  const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { $set: updatedData }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
       if (user) {
         res.status(200).send(user);
@@ -50,7 +51,7 @@ module.exports.editUser = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введенные данные некорректны' });
       } else {
         res.status(500).send({ message: 'Произошла неизвестная ошибка' });

@@ -32,7 +32,13 @@ module.exports.deleteCard = (req, res) => {
         res.status(404).send({ message: 'Карточка по указанному id не найдена' });
       }
     })
-    .catch(() => res.status(500).send({ message: 'Произошла неизвестная ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Произошла ошибка. Проверьте корректность id' });
+      } else {
+        res.status(500).send({ message: 'Произошла неизвестная ошибка' });
+      }
+    });
 };
 
 module.exports.likeCard = (req, res) => {
