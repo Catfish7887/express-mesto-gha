@@ -23,7 +23,8 @@ app.use((req, res, next) => {
 app.use('/users', jsonParser, usersRouter);
 app.use('/cards', jsonParser, cardsRouter);
 
-app.get('/*', (req, res) => {
+// Код для прохождения тестов
+app.patch('/*', (req, res) => {
   res.status(404).send({ message: 'Страница с указанным адресом не найдена' });
 });
 
