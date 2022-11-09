@@ -42,7 +42,7 @@ module.exports.createUser = (req, res) => {
 module.exports.editUser = (req, res) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
         res.status(200).send(user);
@@ -60,7 +60,9 @@ module.exports.editUser = (req, res) => {
 };
 
 module.exports.editAvatar = (req, res) => {
-  User.findByIdAndUpdate(req.user._id, { $set: { avatar: req.body.avatar } }, { new: true })
+  const { avatar } = req.body;
+
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
         res.status(200).send(user);
