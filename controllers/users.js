@@ -21,3 +21,20 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.send(user))
     .catch(() => res.status(500).send({ message: 'Не удалось создать пользователя' }));
 };
+
+module.exports.editUser = (req, res) => {
+  const updatedData = {
+    name: req.body.name,
+    about: req.body.about,
+  };
+
+  User.findByIdAndUpdate(req.user._id, { $set: updatedData }, { new: true })
+    .then(() => res.send('ok'))
+    .catch((err) => res.send(err));
+};
+
+module.exports.editAvatar = (req, res) => {
+  User.findByIdAndUpdate(req.user._id, { $set: { avatar: req.body.avatar } }, { new: true })
+    .then(() => res.send('ok'))
+    .catch(() => res.send('not ok'));
+};
