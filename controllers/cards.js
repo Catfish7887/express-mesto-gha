@@ -11,11 +11,11 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user;
 
-  Card.create({ name, link, owner }, { runValidators: true })
-    .then((card) => res.send(card))
+  Card.create({ name, link, owner })
+    .then((card) => res.status(constants.HTTP_STATUS_OK).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(constants.HTTP_STATUS_OK).send({ message: 'Переданы некорректные данные при создании карточки' });
+        res.status(constants.HTTP_STATUS_BAD_REQUEST).send(err);
       } else {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
       }
@@ -52,7 +52,7 @@ module.exports.likeCard = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки лайка' });
       } else {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
