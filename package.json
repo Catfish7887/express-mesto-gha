@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/Catfish7887/express-mesto-gha.git"
   },
-  "author": "",
+  "author": "Daniil Klochkov, Yandex.Practicum student",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Catfish7887/express-mesto-gha/issues"

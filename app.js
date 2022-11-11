@@ -24,7 +24,7 @@ app.use('/users', jsonParser, usersRouter);
 app.use('/cards', jsonParser, cardsRouter);
 
 // Код для прохождения тестов
-app.patch('/*', (req, res) => {
+app.use('/*', (req, res) => {
   res.status(404).send({ message: 'Страница с указанным адресом не найдена' });
 });
 
