@@ -28,7 +28,11 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(cardId)
     .then((card) => {
       if (card) {
-        res.status(constants.HTTP_STATUS_OK).send(card);
+        if (card.owner === req.user._id) {
+          res.status(constants.HTTP_STATUS_OK).send(card);
+        } else {
+          throw new Error('1234');
+        }
       } else {
         res.status(constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка по указанному id не найдена' });
       }
