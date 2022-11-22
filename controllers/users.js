@@ -9,7 +9,7 @@ module.exports.getUsers = (req, res) => {
     .catch(() => res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' }));
 };
 
-// Этот обработчик используется для получения пользоваптеля по ID,
+// Этот обработчик используется для получения пользоваателя по ID,
 // или для получения данных авторизировавшегося пользователя
 module.exports.getUser = (req, res) => {
   const id = (req.params.id === 'me') ? req.user._id : req.params.id;
