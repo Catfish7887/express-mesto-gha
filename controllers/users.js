@@ -107,7 +107,7 @@ module.exports.login = (req, res) => {
   User.findOneAndValidatePassword({ email, password })
     .then((user) => {
       res.send({
-        token: jwt.sign({ _id: user._id }, 'salt', { expiresIn: '14d' }),
+        token: jwt.sign({ _id: user._id }, 'salt', { expiresIn: '7d' }),
       });
     })
     .catch((err) => {

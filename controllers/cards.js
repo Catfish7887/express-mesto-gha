@@ -1,5 +1,15 @@
 const { constants } = require('http2');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 const Card = require('../models/card');
+
+// Логика сравнения пользователей и удаление карточки для функции ниже
+const checkCardOwnerAndRemove = (card, userId) => {
+  if (card.owner.toString() === userId) {
+    card.remove();
+  } else {
+    throw new UnauthorizedError('Вы не можете удалять чужие карточки');
+  }
+};
 
 module.exports.getCards = (req, res) => {
   Card.find({})
@@ -24,26 +34,18 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   const cardId = req.params.id;
+  const user = req.user._id;
 
-  Card.findByIdAndDelete(cardId)
+  Card.findById(cardId)
     .then((card) => {
       if (card) {
-        if (card.owner === req.user._id) {
-          res.status(constants.HTTP_STATUS_OK).send(card);
-        } else {
-          throw new Error('1234');
-        }
+        checkCardOwnerAndRemove(card, user);
+        res.send(card);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка по указанному id не найдена' });
+        throw new UnauthorizedError('Карточка не найдена');
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Произошла ошибка. Проверьте корректность id' });
-      } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
-      }
-    });
+    .catch((err) => { res.send(err); });
 };
 
 module.exports.likeCard = (req, res) => {
