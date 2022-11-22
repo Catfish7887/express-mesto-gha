@@ -1,6 +1,6 @@
 const usersRouter = require('express').Router();
 
-const { celebParamsUsersMe } = require('../validators/user');
+const { celebParamsUsersMe, celebBodyUser } = require('../validators/user');
 const {
   getUsers, getUser, editUser, editAvatar,
 } = require('../controllers/users');
@@ -8,7 +8,7 @@ const {
 usersRouter.get('/', getUsers);
 usersRouter.get('/:id', celebParamsUsersMe, getUser);
 usersRouter.get('/me', getUser);
-usersRouter.patch('/me', editUser);
-usersRouter.patch('/me/avatar', editAvatar);
+usersRouter.patch('/me', celebBodyUser, editUser);
+usersRouter.patch('/me/avatar', celebBodyUser, editAvatar);
 
 module.exports = usersRouter;

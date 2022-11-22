@@ -8,7 +8,7 @@ const cardsRouter = require('./routes/cards');
 
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
-const { celebBodyUser, celebBodyAuth } = require('./validators/user');
+const { celebBodyAuth, celebBodyUserCreate } = require('./validators/user');
 
 const { PORT = 3000 } = process.env;
 
@@ -17,7 +17,7 @@ const app = express();
 mongoose.connect('mongodb://localhost:27017/mydb');
 
 app.use(bodyParser.json());
-app.post('/signup', celebBodyUser, createUser);
+app.post('/signup', celebBodyUserCreate, createUser);
 app.post('/signin', celebBodyAuth, login);
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
