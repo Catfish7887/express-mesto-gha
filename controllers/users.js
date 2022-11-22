@@ -88,10 +88,16 @@ module.exports.createUser = (req, res) => {
       res.status(201).send({
         _id: user._id,
         email: user.email,
+        name: user.name,
+        avatar: user.avatar,
       });
     })
     .catch((err) => {
-      res.status(400).send(err);
+      if (err.code === 11000) {
+        res.send({ message: 'Пользователь с таким Email уже зарегистрирован' });
+      } else {
+        res.send(err);
+      }
     });
 };
 
@@ -101,7 +107,7 @@ module.exports.login = (req, res) => {
   User.findOneAndValidatePassword({ email, password })
     .then((user) => {
       res.send({
-        token: jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '14d' }),
+        token: jwt.sign({ _id: user._id }, 'salt', { expiresIn: '14d' }),
       });
     })
     .catch((err) => {

@@ -21,10 +21,12 @@ app.post('/signup', celebBodyUser, createUser);
 app.post('/signin', celebBodyAuth, login);
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
-// Код для прохождения тестов
+
 app.use('/*', (req, res) => {
   res.status(404).send({ message: 'Страница с указанным адресом не найдена' });
 });
+
+app.use(errors());
 
 // Обработчик ошибок сервера
 app.use((err, req, res, next) => {
@@ -32,6 +34,5 @@ app.use((err, req, res, next) => {
   next();
 });
 // Обработчик ошибок Joi
-app.use(errors());
 
 app.listen(PORT);
