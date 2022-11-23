@@ -53,9 +53,9 @@ const userSchema = new mongoose.Schema(
               }
 
               const {
-                password: removed, // удаляем пароль из объекта пользователя
+                password: removed,
                 ...user
-              } = document.toObject(); // превращаем документ в объект пользователя
+              } = document.toObject();
               return user;
             });
           });

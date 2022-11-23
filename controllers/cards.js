@@ -48,7 +48,7 @@ module.exports.deleteCard = (req, res, next) => {
         next(new NotFoundError('Карточка не найдена'));
       }
     })
-    .catch(() => next(new ServerError('Произошла неизвестная ошибка')));
+    .catch((err) => next(err));
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -62,7 +62,7 @@ module.exports.likeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError({ message: 'Переданы некорректные данные для постановки лайка' }));
+        next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
       } else {
         next(new ServerError('Произошла неизвестная ошибка'));
       }
@@ -75,12 +75,12 @@ module.exports.dislikeCard = (req, res, next) => {
       if (card) {
         res.status(constants.HTTP_STATUS_OK).send(card);
       } else {
-        next(new NotFoundError({ message: 'Карточка по указанному id не найдена' }));
+        next(new NotFoundError('Карточка по указанному id не найдена'));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError({ message: 'Переданы некорректные данные для снятия лайка' }));
+        next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
       } else {
         next(new ServerError('Произошла неизвестная ошибка'));
       }
