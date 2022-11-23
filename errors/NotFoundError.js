@@ -7,6 +7,7 @@ class NotFoundError extends HTTPError {
     super(message);
     this.statusCode = constants.HTTP_STATUS_NOT_FOUND;
     this.name = 'NotFoundError';
+    this.message = message;
   }
 }
 

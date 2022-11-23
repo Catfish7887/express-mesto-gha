@@ -7,6 +7,7 @@ class BadRequestError extends HTTPError {
     super(message);
     this.statusCode = constants.HTTP_STATUS_BAD_REQUEST;
     this.name = 'BadRequestError';
+    this.message = message;
   }
 }
 

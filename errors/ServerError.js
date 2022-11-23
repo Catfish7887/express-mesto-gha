@@ -7,6 +7,7 @@ class ServerError extends HTTPError {
     super(message);
     this.name = 'ServerError';
     this.statusCode = constants.HTTP_STATUS_INTERNAL_SERVER_ERRORl;
+    this.message = message;
   }
 }
 

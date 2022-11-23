@@ -7,6 +7,7 @@ class ConflictError extends HTTPError {
     super(message);
     this.statusCode = constants.HTTP_STATUS_CONFLICT;
     this.name = 'ConflictError';
+    this.message = message;
   }
 }
 

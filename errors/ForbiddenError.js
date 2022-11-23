@@ -7,6 +7,7 @@ class ForbiddenError extends HTTPError {
     super(message);
     this.statusCode = constants.HTTP_STATUS_FORBIDDEN;
     this.name = 'ForbiddenError';
+    this.message = message;
   }
 }
 
