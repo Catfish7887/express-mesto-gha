@@ -6,7 +6,6 @@ class UnauthorizedError extends HTTPError {
   constructor(message) {
     super(message);
     this.name = 'UnauthorizedError';
-    this.message = message;
     this.statusCode = constants.HTTP_STATUS_UNAUTHORIZED;
   }
 }

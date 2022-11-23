@@ -4,11 +4,11 @@ const { celebrate, schemaObjectId, schemaURL } = require('./utils');
 
 const joiSchemaCard = Joi.object({
   name: Joi.string().min(2).max(30).required(),
-  link: schemaURL,
+  link: schemaURL.required(),
 });
 
 const joiSchemaCardId = Joi.object({
-  id: schemaObjectId,
+  cardId: schemaObjectId.required(),
 });
 
 const cardSegment = { [Segments.BODY]: joiSchemaCard };

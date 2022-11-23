@@ -1,5 +1,6 @@
 const { constants } = require('http2');
-const UnauthorizedError = require('../errors/UnauthorizedError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 const Card = require('../models/card');
 
 // Логика сравнения пользователей и удаление карточки для функции ниже
@@ -7,7 +8,7 @@ const checkCardOwnerAndRemove = (card, userId) => {
   if (card.owner.toString() === userId) {
     card.remove();
   } else {
-    throw new UnauthorizedError('Вы не можете удалять чужие карточки');
+    throw new ForbiddenError('Вы не можете удалять чужие карточки');
   }
 };
 
@@ -40,9 +41,9 @@ module.exports.deleteCard = (req, res) => {
     .then((card) => {
       if (card) {
         checkCardOwnerAndRemove(card, user);
-        res.send(card);
+        res.status(constants.HTTP_STATUS_OK).send(card);
       } else {
-        throw new UnauthorizedError('Карточка не найдена');
+        throw new NotFoundError('Карточка не найдена');
       }
     })
     .catch((err) => { res.send(err); });
@@ -54,7 +55,7 @@ module.exports.likeCard = (req, res) => {
       if (card) {
         res.status(constants.HTTP_STATUS_OK).send(card);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка по указанному id не найдена' });
+        throw new NotFoundError('Карточка по указанному ID не найдена');
       }
     })
     .catch((err) => {

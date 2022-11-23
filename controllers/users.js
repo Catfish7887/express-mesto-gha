@@ -2,6 +2,10 @@ const { constants } = require('http2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const ConflictError = require('../errors/ConflictError');
+const BadRequestError = require('../errors/BadRequestError');
+const ServerError = require('../errors/ServerError');
+const NotFoundError = require('../errors/NotFoundError');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -59,14 +63,14 @@ module.exports.editAvatar = (req, res) => {
       if (user) {
         res.status(constants.HTTP_STATUS_OK).send(user);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
+        throw new NotFoundError('Пользователь по указанному Id не найден');
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Введенные данные некорректны' });
+        throw new BadRequestError('Введены некорректные данные');
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
+        throw new ServerError('Произошла неизвестная ошибка');
       }
     });
 };
@@ -85,18 +89,13 @@ module.exports.createUser = (req, res) => {
       password: hash,
     }))
     .then((user) => {
-      res.status(201).send({
-        _id: user._id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-      });
+      res.status(constants.HTTP_STATUS_CREATED).send(user);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        res.send({ message: 'Пользователь с таким Email уже зарегистрирован' });
+        throw new ConflictError('Пользователь с таким Email уже зарегистрирован');
       } else {
-        res.send(err);
+        throw new ServerError('Произошла неизвестная ошибка');
       }
     });
 };
