@@ -1,6 +1,8 @@
 const { constants } = require('http2');
+const BadRequestError = require('../errors/BadRequestError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const NotFoundError = require('../errors/NotFoundError');
+const ServerError = require('../errors/ServerError');
 const Card = require('../models/card');
 
 // Логика сравнения пользователей и удаление карточки для функции ниже
@@ -12,13 +14,13 @@ const checkCardOwnerAndRemove = (card, userId) => {
   }
 };
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.status(constants.HTTP_STATUS_OK).send(cards))
-    .catch(() => res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' }));
+    .catch(() => next(new ServerError('Произошла неизвестная ошибка')));
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user;
 
@@ -26,14 +28,14 @@ module.exports.createCard = (req, res) => {
     .then((card) => res.status(constants.HTTP_STATUS_OK).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные для создания карточки' });
+        next(new BadRequestError({ message: 'Переданы некорректные данные для создания карточки' }));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
+        next(new ServerError('Произошла неизвестная ошибка'));
       }
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   const cardId = req.params.id;
   const user = req.user._id;
 
@@ -43,44 +45,44 @@ module.exports.deleteCard = (req, res) => {
         checkCardOwnerAndRemove(card, user);
         res.status(constants.HTTP_STATUS_OK).send(card);
       } else {
-        throw new NotFoundError('Карточка не найдена');
+        next(new NotFoundError('Карточка не найдена'));
       }
     })
-    .catch((err) => { res.send(err); });
+    .catch(() => next(new ServerError('Произошла неизвестная ошибка')));
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .then((card) => {
       if (card) {
         res.status(constants.HTTP_STATUS_OK).send(card);
       } else {
-        throw new NotFoundError('Карточка по указанному ID не найдена');
+        next(new NotFoundError('Карточка по указанному ID не найдена'));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки лайка' });
+        next(new BadRequestError({ message: 'Переданы некорректные данные для постановки лайка' }));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
+        next(new ServerError('Произошла неизвестная ошибка'));
       }
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .then((card) => {
       if (card) {
         res.status(constants.HTTP_STATUS_OK).send(card);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка по указанному id не найдена' });
+        next(new NotFoundError({ message: 'Карточка по указанному id не найдена' }));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные для снятия лайка' });
+        next(new BadRequestError({ message: 'Переданы некорректные данные для снятия лайка' }));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
+        next(new ServerError('Произошла неизвестная ошибка'));
       }
     });
 };

@@ -7,15 +7,15 @@ const BadRequestError = require('../errors/BadRequestError');
 const ServerError = require('../errors/ServerError');
 const NotFoundError = require('../errors/NotFoundError');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(constants.HTTP_STATUS_OK).send(users))
-    .catch(() => res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' }));
+    .catch(() => next(new ServerError('Произошла неизвестная ошибка')));
 };
 
 // Этот обработчик используется для получения пользоваателя по ID,
 // или для получения данных авторизировавшегося пользователя
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   const id = (req.params.id === 'me') ? req.user._id : req.params.id;
 
   User.findOne({ _id: id })
@@ -23,19 +23,19 @@ module.exports.getUser = (req, res) => {
       if (user) {
         res.status(constants.HTTP_STATUS_OK).send(user);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
+        next(new NotFoundError({ message: 'Пользователь по указанному id не найден' }));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Произошла ошибка. Возможно, введён некорректный id пользователя' });
+        next(new BadRequestError({ message: 'Произошла ошибка. Возможно, введён некорректный id пользователя' }));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
+        next(new ServerError('Произошла неизвестная ошибка'));
       }
     });
 };
 
-module.exports.editUser = (req, res) => {
+module.exports.editUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
@@ -43,19 +43,19 @@ module.exports.editUser = (req, res) => {
       if (user) {
         res.status(constants.HTTP_STATUS_OK).send(user);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
+        next(new NotFoundError({ message: 'Пользователь по указанному id не найден' }));
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Введенные данные некорректны' });
+        next(new BadRequestError({ message: 'Введенные данные некорректны' }));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Произошла неизвестная ошибка' });
+        next(new ServerError('Произошла неизвестная ошибка'));
       }
     });
 };
 
-module.exports.editAvatar = (req, res) => {
+module.exports.editAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
@@ -63,19 +63,19 @@ module.exports.editAvatar = (req, res) => {
       if (user) {
         res.status(constants.HTTP_STATUS_OK).send(user);
       } else {
-        throw new NotFoundError('Пользователь по указанному Id не найден');
+        next(new NotFoundError('Пользователь по указанному Id не найден'));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Введены некорректные данные');
+        next(new BadRequestError('Введены некорректные данные'));
       } else {
-        throw new ServerError('Произошла неизвестная ошибка');
+        next(new ServerError('Произошла неизвестная ошибка'));
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -88,19 +88,20 @@ module.exports.createUser = (req, res) => {
       email,
       password: hash,
     }))
-    .then((user) => {
-      res.status(constants.HTTP_STATUS_CREATED).send(user);
+    .then((document) => {
+      const { password: removed, ...user } = document.toObject();
+      res.send(user);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        throw new ConflictError('Пользователь с таким Email уже зарегистрирован');
+        next(new ConflictError('Пользователь с таким Email уже зарегистрирован'));
       } else {
-        throw new ServerError('Произошла неизвестная ошибка');
+        next(new ServerError('Произошла неизвестная ошибка'));
       }
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findOneAndValidatePassword({ email, password })
@@ -109,7 +110,7 @@ module.exports.login = (req, res) => {
         token: jwt.sign({ _id: user._id }, 'salt', { expiresIn: '7d' }),
       });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
+    .catch(() => {
+      next(new ServerError('Произошла неизвестная ошибка'));
     });
 };

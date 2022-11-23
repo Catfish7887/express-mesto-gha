@@ -33,6 +33,5 @@ app.use((err, req, res, next) => {
   res.status(err.statusCode).send({ message: err.message });
   next();
 });
-// Обработчик ошибок Joi
 
 app.listen(PORT);
