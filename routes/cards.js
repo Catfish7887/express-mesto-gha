@@ -11,7 +11,7 @@ const { celebCard, celebCardId } = require('../validators/card');
 
 cardsRouter.get('/', getCards);
 cardsRouter.post('/', celebCard, createCard);
-cardsRouter.delete('/:id', celebCardId, deleteCard);
+cardsRouter.delete('/:cardId', celebCardId, deleteCard);
 cardsRouter.put('/:cardId/likes', celebCardId, likeCard);
 cardsRouter.delete('/:cardId/likes', celebCardId, dislikeCard);
 

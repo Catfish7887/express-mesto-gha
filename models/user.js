@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const userSchema = new mongoose.Schema(
   {
@@ -43,12 +44,12 @@ const userSchema = new mongoose.Schema(
           .select('+password')
           .then((document) => {
             if (!document) {
-              throw new Error('Неправильный логин или пароль');
+              throw new UnauthorizedError('Неправильный логин или пароль');
             }
 
             return bcrypt.compare(password, document.password).then((isSuccess) => {
               if (!isSuccess) {
-                throw new Error('Неправильный логин или пароль');
+                throw new UnauthorizedError('Неправильный логин или пароль');
               }
 
               const {

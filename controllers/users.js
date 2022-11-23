@@ -6,6 +6,7 @@ const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
 const ServerError = require('../errors/ServerError');
 const NotFoundError = require('../errors/NotFoundError');
+const HTTPError = require('../errors/HTTPError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -23,12 +24,12 @@ module.exports.getUser = (req, res, next) => {
       if (user) {
         res.status(constants.HTTP_STATUS_OK).send(user);
       } else {
-        next(new NotFoundError({ message: 'Пользователь по указанному id не найден' }));
+        next(new NotFoundError('Пользователь по указанному id не найден'));
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError({ message: 'Произошла ошибка. Возможно, введён некорректный id пользователя' }));
+        next(new BadRequestError('Произошла ошибка. Возможно, введён некорректный id пользователя'));
       } else {
         next(new ServerError('Произошла неизвестная ошибка'));
       }
@@ -43,12 +44,12 @@ module.exports.editUser = (req, res, next) => {
       if (user) {
         res.status(constants.HTTP_STATUS_OK).send(user);
       } else {
-        next(new NotFoundError({ message: 'Пользователь по указанному id не найден' }));
+        next(new NotFoundError('Пользователь по указанному id не найден'));
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError({ message: 'Введенные данные некорректны' }));
+        next(new BadRequestError('Введенные данные некорректны'));
       } else {
         next(new ServerError('Произошла неизвестная ошибка'));
       }
@@ -110,7 +111,13 @@ module.exports.login = (req, res, next) => {
         token: jwt.sign({ _id: user._id }, 'salt', { expiresIn: '7d' }),
       });
     })
-    .catch(() => {
-      next(new ServerError('Произошла неизвестная ошибка'));
+    .catch((err) => {
+      if (err instanceof HTTPError) {
+        next(err);
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError(err.message));
+      } else {
+        next(new ServerError(err.message));
+      }
     });
 };

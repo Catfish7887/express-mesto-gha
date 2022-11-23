@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
+const { constants } = require('http2');
 
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
@@ -30,7 +31,9 @@ app.use(errors());
 
 // Обработчик ошибок сервера
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.message });
+  res
+    .status(err.statusCode ? err.statusCode : constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+    .send(err.message ? { message: err.message } : 'Произошла неизвестная ошибка');
   next();
 });
 
