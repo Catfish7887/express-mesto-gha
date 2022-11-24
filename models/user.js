@@ -3,6 +3,10 @@ const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 
+// Регулярка для ссылки
+// eslint-disable-next-line no-useless-escape
+const regExp = /https?:\/\/[a-z0-9\.-\/-_~:\/?#\[\]@!$&'()*+,;=]+/i;
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -20,6 +24,10 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+      validate: {
+        validator: (value) => regExp.test(value),
+        message: () => 'Аватар должен быть ссылкой',
+      },
     },
     email: {
       type: String,
@@ -27,7 +35,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       validate: {
         validator: (value) => validator.isEmail(value),
-        message: 'Электронная почта должна быть вида email@example.com',
+        message: () => 'Электронная почта должна быть вида email@example.com',
       },
     },
     password: {
@@ -52,10 +60,7 @@ const userSchema = new mongoose.Schema(
                 throw new UnauthorizedError('Неправильный логин или пароль');
               }
 
-              const {
-                password: removed,
-                ...user
-              } = document.toObject();
+              const { password: removed, ...user } = document.toObject();
               return user;
             });
           });
